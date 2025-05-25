@@ -20,11 +20,15 @@ app.post('/hltb', async (req, res) => {
   }
 
   try {
-    const results = await hltbService.search(gameName);
+    console.log("Primit nume joc:", gameName);
+    const result = await hltbService.search(gameName);
+    console.log("Rezultat HLTB:", result);
 
-    const bestMatch = results[0];
-    const minutes = bestMatch?.gameplayMain ? bestMatch.gameplayMain * 60 : 1200;
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Jocul nu a fost găsit.' });
+    }
 
+    const minutes = result[0].gameplayMain * 60;
     res.json({ minutes });
   } catch (error) {
     console.error('Eroare HLTB:', error);
