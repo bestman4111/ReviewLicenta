@@ -22,7 +22,7 @@ app.post('/hltb', async (req, res) => {
   try {
     const results = await hltbService.search(gameName);
 
-    onst bestMatch = results[0];
+    const bestMatch = results[0];
     const minutes = bestMatch?.gameplayMain ? bestMatch.gameplayMain * 60 : 1200;
 
     res.json({ minutes });
