@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Microserviciu pentru a obține timpul de joc de pe HowLongToBeat",
   "main": "server.js",
-  "type": "module",
   "scripts": {
     "start": "node server.js"
   },
