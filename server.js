@@ -3,45 +3,36 @@ const cors = require('cors');
 const { HowLongToBeatService } = require('howlongtobeat');
 
 const app = express();
-const port = process.env.PORT || 3000;
-
 const hltbService = new HowLongToBeatService();
 
-app.use(cors()); // permite cereri de oriunde
+app.use(cors());
+app.use(express.json());
 
-app.get('/hltb', async (req, res) => {
-  const gameName = req.query.game;
+app.post('/hltb', async (req, res) => {
+  const { gameName } = req.body;
 
   if (!gameName) {
-    return res.status(400).json({ error: 'Parametrul "game" este necesar.' });
+    return res.status(400).json({ error: 'Lipseste numele jocului.' });
   }
 
   try {
-    console.log(`Caut: ${gameName}`);
     const results = await hltbService.search(gameName);
 
     if (!results || results.length === 0) {
-      return res.status(404).json({ error: 'Jocul nu a fost găsit.' });
+      return res.status(404).json({ error: 'Jocul nu a fost gasit.' });
     }
 
-    const firstMatch = results[0];
-    const mainMinutes = firstMatch.gameplayMain ? Math.round(firstMatch.gameplayMain * 60) : null;
+    const mainStoryHours = results[0].gameplayMain;
+    const minutes = Math.round(mainStoryHours * 60);
 
-    if (!mainMinutes) {
-      return res.status(204).json({ error: 'Timpul principal nu este disponibil.' });
-    }
-
-    return res.json({ minutes: mainMinutes, game: firstMatch.name });
-  } catch (err) {
-    console.error('Eroare în HLTB search:', err);
-    res.status(500).json({ error: 'Eroare internă server.' });
+    res.json({ minutes });
+  } catch (error) {
+    console.error('Eroare HLTB:', error);
+    res.status(500).json({ error: 'Eroare la interogarea HowLongToBeat.' });
   }
 });
 
-app.get('/', (req, res) => {
-  res.send('HLTB microserviciu este online.');
-});
-
-app.listen(port, () => {
-  console.log(`Serverul HLTB rulează pe portul ${port}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Serverul rulează pe portul ${PORT}`);
 });
