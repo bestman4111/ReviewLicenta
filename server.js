@@ -1,42 +1,49 @@
 const express = require('express');
+const axios = require('axios');
 const cors = require('cors');
-const { HowLongToBeatService } = require('howlongtobeat');
 
 const app = express();
-const hltbService = new HowLongToBeatService();
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('API-ul HowLongToBeat este online.');
-});
-
 app.post('/hltb', async (req, res) => {
-  const { gameName } = req.body;
+  const { title } = req.body;
 
-  if (!gameName) {
-    return res.status(400).json({ error: 'Lipseste numele jocului.' });
+  if (!title) {
+    return res.status(400).json({ error: 'Titlul jocului este necesar.' });
   }
 
-  try {
-    console.log("Primit nume joc:", gameName);
-    const result = await hltbService.search(gameName);
-    console.log("Rezultat HLTB:", result);
+  console.log(`Primit nume joc: ${title}`);
 
-    if (result.length === 0) {
-      return res.status(404).json({ error: 'Jocul nu a fost găsit.' });
+  try {
+    const response = await axios.get(`https://hltb-proxy.vercel.app/search?query=${encodeURIComponent(title)}`);
+
+    const results = response.data;
+
+    if (results.length === 0) {
+      console.log('Nu s-a găsit jocul.');
+      return res.status(404).json({ error: 'Jocul nu a fost găsit pe HLTB.' });
     }
 
-    const minutes = result[0].gameplayMain * 60;
-    res.json({ minutes });
+    const game = results[0]; // Presupunem că primul rezultat e cel corect
+
+    console.log(`Durata gameplay main pentru ${game.name}: ${game.gameplayMain} ore`);
+
+    res.json({
+      title: game.name,
+      gameplayMain: game.gameplayMain,
+      gameplayMainExtra: game.gameplayMainExtra,
+      gameplayCompletionist: game.gameplayCompletionist
+    });
+
   } catch (error) {
-    console.error('Eroare HLTB:', error);
+    console.error('Eroare la interogarea HLTB:', error.message);
     res.status(500).json({ error: 'Eroare la interogarea HowLongToBeat.' });
   }
 });
 
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Serverul rulează pe portul ${PORT}`);
 });
