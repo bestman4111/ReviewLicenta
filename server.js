@@ -22,12 +22,8 @@ app.post('/hltb', async (req, res) => {
   try {
     const results = await hltbService.search(gameName);
 
-    if (!results || results.length === 0) {
-      return res.status(404).json({ error: 'Jocul nu a fost gasit.' });
-    }
-
-    const mainStoryHours = results[0].gameplayMain;
-    const minutes = Math.round(mainStoryHours * 60);
+    onst bestMatch = results[0];
+    const minutes = bestMatch?.gameplayMain ? bestMatch.gameplayMain * 60 : 1200;
 
     res.json({ minutes });
   } catch (error) {
