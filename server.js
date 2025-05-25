@@ -8,6 +8,10 @@ const hltbService = new HowLongToBeatService();
 app.use(cors());
 app.use(express.json());
 
+app.get('/', (req, res) => {
+  res.send('API-ul HowLongToBeat este online.');
+});
+
 app.post('/hltb', async (req, res) => {
   const { gameName } = req.body;
 
