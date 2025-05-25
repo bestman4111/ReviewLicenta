@@ -1,49 +1,44 @@
-const express = require('express');
-const axios = require('axios');
-const cors = require('cors');
+import express from 'express';
+import axios from 'axios';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
 app.use(express.json());
 
 app.post('/hltb', async (req, res) => {
-  const { title } = req.body;
+  const { game } = req.body;
 
-  if (!title) {
-    return res.status(400).json({ error: 'Titlul jocului este necesar.' });
+  if (!game) {
+    return res.status(400).json({ error: "Lipsește parametrul 'game'" });
   }
 
-  console.log(`Primit nume joc: ${title}`);
-
   try {
-    const response = await axios.get(`https://hltb-proxy.vercel.app/search?query=${encodeURIComponent(title)}`);
+    // URL-ul API-ului proxy HowLongToBeat
+    const url = `https://htlb-proxy.vercel.app/api/search?query=${encodeURIComponent(game)}`;
 
-    const results = response.data;
+    const response = await axios.get(url);
 
-    if (results.length === 0) {
-      console.log('Nu s-a găsit jocul.');
-      return res.status(404).json({ error: 'Jocul nu a fost găsit pe HLTB.' });
+    if (!response.data || !response.data.data || response.data.data.length === 0) {
+      return res.status(404).json({ error: "Jocul nu a fost găsit în baza HLTB." });
     }
 
-    const game = results[0]; // Presupunem că primul rezultat e cel corect
+    // Extragem timpul principal (main story)
+    const mainHours = response.data.data[0].gameplayMain || null;
 
-    console.log(`Durata gameplay main pentru ${game.name}: ${game.gameplayMain} ore`);
+    if (!mainHours) {
+      return res.status(404).json({ error: "Timpul principal pentru joc nu este disponibil." });
+    }
 
-    res.json({
-      title: game.name,
-      gameplayMain: game.gameplayMain,
-      gameplayMainExtra: game.gameplayMainExtra,
-      gameplayCompletionist: game.gameplayCompletionist
-    });
+    // Răspuns către client, în minute
+    res.json({ minutes: Math.round(mainHours * 60) });
 
   } catch (error) {
-    console.error('Eroare la interogarea HLTB:', error.message);
-    res.status(500).json({ error: 'Eroare la interogarea HowLongToBeat.' });
+    console.error("Eroare la interogarea HLTB:", error.message);
+    res.status(500).json({ error: "Eroare la interogarea HowLongToBeat." });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`Serverul rulează pe portul ${PORT}`);
+  console.log(`Server pornit pe portul ${PORT}`);
 });
