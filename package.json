@@ -1,0 +1,14 @@
+{
+  "name": "hltb-api",
+  "version": "1.0.0",
+  "description": "Microserviciu pentru a obține timpul de joc de pe HowLongToBeat",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "howlongtobeat": "^5.1.0",
+    "cors": "^2.8.5"
+  }
+}
