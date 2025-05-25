@@ -1,25 +1,13 @@
 {
-  "name": "hltb-proxy-server",
+  "name": "hltb-proxy-api-server",
   "version": "1.0.0",
-  "description": "Server Node.js pentru interogare HowLongToBeat prin proxy API",
+  "description": "Server proxy simplu pentru HowLongToBeat API",
   "main": "server.js",
-  "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node server.js"
   },
-  "keywords": [
-    "howlongtobeat",
-    "proxy",
-    "express",
-    "api"
-  ],
-  "license": "MIT",
   "dependencies": {
     "axios": "^1.4.0",
     "express": "^4.18.2"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.22"
   }
 }
