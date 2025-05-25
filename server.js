@@ -1,44 +1,34 @@
-import express from 'express';
-import axios from 'axios';
-
+const express = require('express');
+const axios = require('axios');
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-app.post('/hltb', async (req, res) => {
-  const { game } = req.body;
-
-  if (!game) {
-    return res.status(400).json({ error: "Lipsește parametrul 'game'" });
+app.get('/hltb', async (req, res) => {
+  const gameTitle = req.query.title;
+  if (!gameTitle) {
+    return res.status(400).json({ error: 'Lipseste parametrul title.' });
   }
 
   try {
-    // URL-ul API-ului proxy HowLongToBeat
-    const url = `https://htlb-proxy.vercel.app/api/search?query=${encodeURIComponent(game)}`;
+    const response = await axios.get(`https://hltb-proxy.fly.dev/v1/query`, {
+      params: { title: gameTitle }
+    });
 
-    const response = await axios.get(url);
-
-    if (!response.data || !response.data.data || response.data.data.length === 0) {
-      return res.status(404).json({ error: "Jocul nu a fost găsit în baza HLTB." });
+    if (!response.data || !response.data[0]) {
+      return res.status(404).json({ error: 'Jocul nu a fost gasit pe HLTB.' });
     }
 
-    // Extragem timpul principal (main story)
-    const mainHours = response.data.data[0].gameplayMain || null;
-
-    if (!mainHours) {
-      return res.status(404).json({ error: "Timpul principal pentru joc nu este disponibil." });
-    }
-
-    // Răspuns către client, în minute
-    res.json({ minutes: Math.round(mainHours * 60) });
+    // Returneaza primul rezultat (cel mai relevant)
+    res.json(response.data[0]);
 
   } catch (error) {
-    console.error("Eroare la interogarea HLTB:", error.message);
-    res.status(500).json({ error: "Eroare la interogarea HowLongToBeat." });
+    console.error('Eroare la interogare HLTB:', error.message);
+    res.status(500).json({ error: 'Eroare la interogarea HowLongToBeat.' });
   }
 });
 
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server pornit pe portul ${PORT}`);
+  console.log(`Serverul ruleaza pe portul ${PORT}`);
 });
