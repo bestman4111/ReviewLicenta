@@ -41,12 +41,23 @@ wss.on('connection', (ws) => {
   clients.push(ws);
 
   ws.on('message', (message) => {
-    console.log('Mesaj primit:', message);
-    clients.forEach((client) => {
-      if(client.readyState === WebSocket.OPEN) {
-        client.send(message.toString());
+    try {
+      const data = JSON.parse(message);
+      if(typeof data.user === 'string' && typeof data.text === 'string') {
+        const cleanMsg = {
+          user: data.user.trim().substring(0, 50),
+          text: data.text.trim().substring(0, 500)
+        };
+
+        clients.forEach((client) => {
+          if(client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(cleanMsg));
+          }
+        });
       }
-    });
+    } catch(err) {
+      console.error('Mesaj invalid: ', err.message);
+    }
   });
 
   ws.on('close', () => {
