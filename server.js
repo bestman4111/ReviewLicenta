@@ -56,6 +56,6 @@ wss.on('connection', (ws) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Serverul Express + WebSocket ruleaza pe portul ${PORT}`);
 });
