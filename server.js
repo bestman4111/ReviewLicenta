@@ -42,7 +42,7 @@ wss.on('connection', (ws) => {
 
   ws.on('message', (message) => {
     console.log('Mesaj primit:', message);
-    clients.forEach((client_ => {
+    clients.forEach((client) => {
       if(client.readyState === WebSocket.OPEN) {
         client.send(message.toString());
       }
