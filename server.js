@@ -1,7 +1,9 @@
 const express = require('express');
 const axios = require('axios');
-const app = express();
+const http = require('http');
+const webSocket = require('ws');
 
+const app = express();
 app.use(express.json());
 
 app.get('/hltb', async (req, res) => {
@@ -28,7 +30,32 @@ app.get('/hltb', async (req, res) => {
   }
 });
 
+// Creeaza server http partajat de Express si WebSocket
+const server = http.createServer(app);
+const wss = new WebSocket.Server({server}); // ataseaza WS la server
+
+let clients = [];
+
+wss.on('connection', (ws) => {
+  console.log('Client WebSocket conectat');
+  clients.push(ws);
+
+  ws.on('message', (message) => {
+    console.log('Mesaj primit:', message);
+    clients.forEach((client_ => {
+      if(client.readyState === WebSocket.OPEN) {
+        client.send(message.toString());
+      }
+    });
+  });
+
+  ws.on('close', () => {
+    clients = clients.filter(c => c !== ws);
+    console.log('Client deconectat');
+  });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Serverul ruleaza pe portul ${PORT}`);
+  console.log(`Serverul Express + WebSocket ruleaza pe portul ${PORT}`);
 });
